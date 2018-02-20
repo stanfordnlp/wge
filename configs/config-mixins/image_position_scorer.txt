@@ -1,0 +1,11 @@
+policy {
+  episodes_to_replay = 10
+  update_rule = "only-last-experience"
+  position_scorer {
+    type = "image"
+    num_filters = [16, 24, 32]
+    hidden_size = 128
+    attn_dim = 64
+  }
+}
+

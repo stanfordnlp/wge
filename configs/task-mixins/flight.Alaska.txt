@@ -1,0 +1,6 @@
+include "../flight-base.txt"
+
+env {
+  domain = "miniwob"
+  subdomain = "flight.Alaska"
+}

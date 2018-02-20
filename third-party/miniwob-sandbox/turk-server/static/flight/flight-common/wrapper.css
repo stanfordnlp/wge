@@ -1,0 +1,61 @@
+/* ################ SIZING ################ */
+
+#wrap, #sync-task-cover {
+  height: 667px;
+  width: 375px;
+}
+#sync-task-cover {
+  font-size: 200%;
+}
+
+#wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  border: 0;
+}
+
+#reward-display {
+  position: static;
+  height: auto;
+  width: auto;
+  margin: 0;
+  padding: 5px;
+}
+#reward-display .info {
+  margin: 5px 0;
+}
+
+#query-wrap {
+  position: absolute;
+  top: 0;
+  left: 380px;
+  width: 260px;
+  height: auto;
+}
+#query {
+  height: auto;
+  display: none;
+}
+#query-pretty {
+  background-color: #EFF;
+  font-size: 14px;
+  padding: 3px;
+}
+#query-pretty .mode {
+  font-weight: bold;
+  display: none;
+}
+#query-pretty table {
+  border-collapse: collapse;
+}
+#query-pretty th, #query-pretty td {
+  border: 1px solid #ddd;
+  padding: 2px 8px;
+  width: 50%;
+  text-align: left;
+}
+#reward-reason {
+  background-color: #FEF;
+  font-size: 14px;
+  padding: 3px;
+}

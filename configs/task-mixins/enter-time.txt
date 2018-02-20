@@ -1,0 +1,5 @@
+env {
+  domain = "miniwob"
+  subdomain = "enter-time"
+  refresh_freq = 1
+}

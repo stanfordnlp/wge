@@ -1,0 +1,6 @@
+env {
+  domain = "miniwob"
+  subdomain = "use-autocomplete"
+  refresh_freq = 1
+  wait_ms = 300
+}

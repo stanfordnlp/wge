@@ -1,0 +1,9 @@
+explore {
+  max_steps_per_episode = 18
+}
+
+env {
+  num_instances = 12
+  domain = "miniwob"
+  subdomain = "click-checkboxes-large"
+}

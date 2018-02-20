@@ -1,0 +1,5 @@
+# Sets exploration to be oracle program policy
+
+program_policy {
+  type = "program-oracle"
+}

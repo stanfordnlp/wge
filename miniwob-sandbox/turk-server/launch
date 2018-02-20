@@ -1,0 +1,3 @@
+LOG_PATH=log/server-stderr.txt
+echo "stdout has been redirected to $LOG_PATH"
+python task.py >> $LOG_PATH 2>&1

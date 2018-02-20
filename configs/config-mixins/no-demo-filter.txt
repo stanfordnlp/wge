@@ -1,0 +1,3 @@
+demonstrations {
+  min_raw_reward = -1.0  # any demo is OK
+}

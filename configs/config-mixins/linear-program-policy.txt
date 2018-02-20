@@ -1,0 +1,6 @@
+program_policy {
+  type = "program"
+  parameterization = "linear"
+  weight_init = 1
+  learning_rate = 1
+}

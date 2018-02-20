@@ -1,0 +1,39 @@
+include "default-base.txt"
+
+train {
+    max_control_steps = 400
+    replay_steps = 10
+}
+
+explore {
+    max_steps_per_episode = 7
+    best_first_beam_size = 5
+}
+
+log {
+    episodes_to_evaluate_small = 3
+    episodes_to_evaluate_big = 15
+
+    evaluate = 10
+    evaluate_big = 20
+    explore = 10
+    replay = 10
+
+    trace_evaluate = 20
+    trace_explore = 20
+    trace_replay = 20
+}
+
+replay_buffer {
+    min_size = 10
+}
+
+policy {
+    utterance_embedder {
+        vocab_size = 10000
+    }
+}
+
+env {
+  num_instances = 2
+}

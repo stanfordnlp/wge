@@ -1,0 +1,3 @@
+policy {
+  query_type = "natural-language"
+}

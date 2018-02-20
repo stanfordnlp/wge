@@ -1,0 +1,5 @@
+# Sets exploration to be perfect oracle policy
+
+program_policy {
+  type = "perfect-oracle"
+}

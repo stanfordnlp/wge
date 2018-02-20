@@ -1,0 +1,3 @@
+policy {
+  update_rule = "only-last-experience"
+}

@@ -1,0 +1,18 @@
+train {
+    behavioral_cloning = True
+    replay_steps = 0  # essentially don't update from replay buffer
+    replay = 1000000000  # essentially don't update from replay buffer
+    reinforce_neural = True
+    reinforce_program = False  # don't use program policy
+}
+
+log {
+    replay = 1000000000  # needs to also never happen
+    trace_replay = 1000000000  # needs to also never happen
+}
+
+explore {
+    program = 1000000000  # never
+    neural = 1
+    best_first_search = 1000000000  # never
+}

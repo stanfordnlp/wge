@@ -1,0 +1,8 @@
+explore {
+    max_steps_per_episode = 20
+}
+
+env {
+  domain = "miniwob"
+  subdomain = "use-spinner"
+}

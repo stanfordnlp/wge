@@ -1,0 +1,14 @@
+# Defaults for flight
+
+explore {
+    max_steps_per_episode = 15
+}
+
+env {
+  wait_ms = 100
+  num_instances = 5
+}
+
+policy {
+  episodes_to_replay = 3  # Episodes are long
+}

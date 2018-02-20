@@ -1,0 +1,15 @@
+# For MiniWoB
+numpy>=1.11
+scipy>=0.18
+Pillow>=4.1
+selenium>=3.4.3
+pytest>=3.2.1
+jsonpickle>=0.9.5
+Fabric>=1.14.0
+futures>=3.1.1
+pyhocon>=0.3.37
+ipython>=5.5.0
+tqdm>=4.17.1
+gitpython>=2.1.6
+tensorboard_logger>=0.0.4
+twisted>=17.9.0

@@ -1,0 +1,9 @@
+explore {
+    max_steps_per_episode = 15 
+}
+
+env {
+  domain = "miniwob"
+  subdomain = "choose-date-nodelay"
+  refresh_freq = 1
+}

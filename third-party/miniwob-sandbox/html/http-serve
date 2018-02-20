@@ -1,0 +1,5 @@
+#!/bin/sh
+PORT="$1"
+[ -n "$PORT" ] || PORT=8080
+echo "Serving on port $PORT"
+twistd -no web --port tcp:"$PORT" --path .

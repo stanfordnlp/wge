@@ -1,0 +1,3 @@
+policy {
+  update_rule = "use-whole-episode"
+}

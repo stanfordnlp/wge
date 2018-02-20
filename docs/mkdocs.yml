@@ -1,0 +1,16 @@
+site_name: Web Agents
+theme: 'material'
+extra:
+  palette:
+    primary: 'indigo'
+    accent: 'light blue'
+pages:
+- index.md
+- setup.md
+- Environment:
+  - envs/environment.md
+  - envs/world-of-bits.md
+- Policy:
+  - policy/basics.md
+  - policy/miniwob.md
+- experiment.md

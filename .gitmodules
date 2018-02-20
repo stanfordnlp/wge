@@ -1,0 +1,9 @@
+[submodule "wob/third-party/websockify"]
+	path = wob/third-party/websockify
+	url = git@github.com:openai/websockify.git
+[submodule "wob/third-party/noVNC"]
+	path = wob/third-party/noVNC
+	url = git@github.com:stanfordnlp/noVNC.git
+[submodule "wob/third-party/universe"]
+	path = wob/third-party/universe
+	url = git@github.com:stanfordnlp/universe.git

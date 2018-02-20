@@ -1,0 +1,5 @@
+env {
+  domain = "miniwob"
+  subdomain = "book-flight-nodelay"
+  refresh_freq = 1
+}

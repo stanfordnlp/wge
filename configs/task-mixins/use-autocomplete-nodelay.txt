@@ -1,0 +1,5 @@
+env {
+  domain = "miniwob"
+  subdomain = "use-autocomplete-nodelay"
+  refresh_freq = 1
+}

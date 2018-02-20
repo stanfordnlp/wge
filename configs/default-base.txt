@@ -1,0 +1,105 @@
+gamma = 1.0
+discount_negative_reward = False
+
+train {
+    max_control_steps = 50000  # max iterations of outer train loop
+    learning_rate = 0.001
+    behavioral_cloning = False
+    replay = 5  # perform a round of replay every X control steps
+    replay_steps = 30  # number of grad steps to take for each round of replay
+    reinforce_program = True  # whether to REINFORCE update program policy
+    reinforce_neural = False  # whether to REINFORCE update neural policy
+}
+
+explore {
+    program = 1  # perform program exploration every X control steps
+    neural = 10  # perform neural exploration every X control steps
+    best_first_search = 10  # perform neural BFS every X control steps
+    max_steps_per_episode = 10  # simulator terminates after this many steps
+    best_first_beam_size = 10
+}
+
+log {
+    # number of episodes to evaluate
+    episodes_to_evaluate_small = 20
+    episodes_to_evaluate_big = 500
+
+    # log basic stats every X control steps
+    evaluate = 100  # small evaluation
+    evaluate_big = 500  # big evaluation
+    explore = 10  # exploration, must be divisible by explore.program or explore.neural
+    replay = 10  # replay, must be divisible by train.replay
+
+    # save full traces every X control steps
+    trace_evaluate = 1000  # Traces for evaluation, must be divisible by log.evaluate
+    trace_explore = 1000  # Traces for exploration, must be divisible by log.explore
+    trace_replay = 1000  # Traces for replay, must be divisible by log.replay
+
+    save = 1000000000  # save every X steps
+    visualize_attention = 100000  # essentially, visualize once per episode
+    record_screenshots = False    # whether to record screenshots in trace directory (slow; steal cursor)
+}
+
+replay_buffer {
+    size = 1000  # max size
+    min_size = 100  # buffer must be at least this size before you're allowed to sample from it
+}
+
+policy {
+  query_type = "structured"
+  episodes_to_replay = 5  # sample this many episodes from replay buffer to compute replay buffer gradient
+  update_rule = "use-whole-episode"
+  baseline = 0.1  # baseline to subtract for gradient update
+  use_critic = True  # whether to use critic in on-policy update
+
+  attn_dim = 64
+  context_embed_dim = 96
+  dom_attention_for_state = True
+  scoring_batch_size = 64
+
+  utterance_embedder {
+    type = "glove"
+    vocab_size = 100000
+    lstm_dim = 64
+  }
+
+  dom_embedder {
+    tag_embed_dim = 16
+    value_embed_dim = 16
+    tampered_embed_dim = 8
+    classes_embed_dim = 16
+  }
+}
+
+program_policy {
+  type = "program"  # "program" or "perfect-oracle" or "program-oracle"
+                    # "program-oracle" is oracle implemented as best program
+                    # tokens, whereas "perfect-oracle" gets 100%
+  parameterization = "softmax"  # "linear" or "softmax"
+  weight_init = 1.0  # weight initialization for each program in the lattice
+  learning_rate = 0.8
+  alpha = 0.1
+  init_v = 0.0
+  max_programs = 50  # Maximum number of programs to keep in DemoPlayer
+}
+
+env {
+  domain = "miniwob"
+  num_instances = 6
+  subdomain = null  # Should be defined in task-mixin
+  return_image = False  # Does not get the pixels of the image if False
+  headless = False  # whether Chrome should launch in headless mode or not. Currently headless mode is broken.
+  wait_ms = 0
+  block_on_reset = True
+  refresh_freq = 50
+  reward_processor {
+    type = "time_independent"  # can be time_independent or time_discounted
+  }
+}
+
+demonstrations {
+  min_raw_reward = 1.0  # minimum reward allowed for demonstration parsing
+  base_dir = 2017-10-16_second-turk
+  parser = chunk-shortcut
+  max_to_use = 1000000000000  # 1 trillion
+}

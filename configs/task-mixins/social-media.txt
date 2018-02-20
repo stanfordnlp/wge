@@ -1,0 +1,8 @@
+explore {
+    max_steps_per_episode = 3
+}
+
+env {
+  domain = "miniwob"
+  subdomain = "social-media"
+}

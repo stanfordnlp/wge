@@ -1,0 +1,3 @@
+include "default-base.txt"
+
+train.max_control_steps = 601

@@ -1,0 +1,14 @@
+# Default configs for email-inbox-nl-turk
+
+explore {
+  max_steps_per_episode = 6
+}
+
+policy {
+  query_type = "natural-language"
+}
+
+env {
+  domain = "miniwob"
+  subdomain = "email-inbox-nl-turk"
+}

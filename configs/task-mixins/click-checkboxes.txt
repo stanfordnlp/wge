@@ -1,0 +1,8 @@
+explore {
+    max_steps_per_episode = 7
+}
+
+env {
+  domain = "miniwob"
+  subdomain = "click-checkboxes"
+}

@@ -1,0 +1,7 @@
+# Doesn't apply the conv layer in the scorer
+
+policy {
+  position_scorer {
+      conv_filters = 0
+  }
+}
