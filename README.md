@@ -35,15 +35,15 @@ flight from San Francisco to New York for Dec 23rd."
   - Make sure Node and npm are installed via ```brew install node```. If they 
   are, ```node -v``` and ```npm -v``` should print version numbers.
 
-- Torch
-  - Install by following directions from http://pytorch.org/. Choose your OS,
-  package manager, python version, and CUDA and you'll be given shell commands
-  to run.
+- PyTorch
+  - Install [PyTorch v0.1.12](http://pytorch.org/previous-versions/). Newer
+    versions of PyTorch are not backwards compatible.
 
 - Selenium
-  - Outside this repository, download [ChromeDriver](https://sites.google.com/a/
-    chromium.org/chromedriver/downloads). Unzip it and then add the directory
-    containing the `chromedriver` executable to the `PATH` environment variable
+  - Outside this repository, download
+    [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/downloads).
+    Unzip it and then add the directory containing the `chromedriver` executable
+    to the `PATH` environment variable
     ```
     export PATH=$PATH:/path/to/chromedriver
     ```
