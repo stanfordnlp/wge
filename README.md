@@ -74,7 +74,7 @@ flight from San Francisco to New York for Dec 23rd."
 ```
 # Where $REPO_DIR is the path to the root of this Git repository.
 git clone https://github.com/stanfordnlp/miniwob-plusplus-demos.git $REPO_DIR/third-party/miniwob-demos
-export RL_DEMO_DIR=$REPO_DIR/third-party/miniwob-plusplus-demos/
+export RL_DEMO_DIR=$REPO_DIR/third-party/miniwob-demos/
 ```
 
 ### MiniWoB setup
