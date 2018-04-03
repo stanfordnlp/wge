@@ -1,13 +1,12 @@
-# Web agents
+# wge
 
-**Authors**: Evan Zheran Liu\*, Kelvin Guu\*, Panupong (Ice) Pasupat\*, Tianlin Shi, Percy Liang (\* equal contribution)
+**Authors:** Evan Zheran Liu\*, Kelvin Guu\*, Panupong (Ice) Pasupat\*, Tianlin Shi, Percy Liang (\* equal contribution) 
 
-Source code accompanying our ICLR 2018 paper: Reinforcement Learning on Web
-Interfaces using Workflow-Guided Exploration.
+Source code accompanying our ICLR 2018 paper:  
+[**Reinforcement Learning on Web Interfaces using Workflow-Guided Exploration**](https://arxiv.org/abs/1802.08802)  
 
 Reproducible experiments using this code are located on [our Codalab
 worksheet](https://worksheets.codalab.org/worksheets/0x0f25031bd42f4aabbc17625fe1484066/).
-
 
 ## Purpose
 
