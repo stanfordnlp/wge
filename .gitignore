@@ -1,0 +1,8 @@
+*.swp
+*.bak
+*~
+
+/.bundle
+/Gemfile.lock
+/vendor
+/_site
