@@ -1,3 +1,3 @@
-# WGE
+# Introduction
 
 Under constructions
