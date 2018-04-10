@@ -45,9 +45,11 @@ we use the demonstrations to **constrain exploration**.
 
 # Demonstrations
 
-Evaluation is done on OpenAI [Mini World of Bits](http://alpha.openai.com/miniwob/) benchmark.
-To aid further research, we have [packaged and augmented the benchmark (**MiniWoB++**)](https://github.com/stanfordnlp/miniwob-plusplus)
-and [released crowdsourced demonstrations](https://github.com/stanfordnlp/miniwob-plusplus-demos).
+Evaluation is done on OpenAI [Mini World of Bits (MiniWoB)](http://alpha.openai.com/miniwob/) benchmark.
+To aid further research, we have released the following resources:
+
+* [**MiniWoB++**](https://github.com/stanfordnlp/miniwob-plusplus): Selenium-based environment and additional challenging tasks
+* [**Crowdsourced demonstrations**](https://github.com/stanfordnlp/miniwob-plusplus-demos)
 
 Some results of the models learned using WGE, compared with models that use behavioral cloning + RL, are shown here:
 
