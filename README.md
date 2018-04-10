@@ -49,7 +49,15 @@ Evaluation is done on OpenAI [Mini World of Bits](http://alpha.openai.com/miniwo
 To aid further research, we have [packaged and augmented the benchmark (**MiniWoB++**)](https://github.com/stanfordnlp/miniwob-plusplus)
 and [released crowdsourced demonstrations](https://github.com/stanfordnlp/miniwob-plusplus-demos).
 
-Some results of the learned models are shown here:
+Some results of the models learned using WGE, compared with models that use behavioral cloning + RL, are shown here:
+
+| WGE (10 demos) | BC+RL (100 demos) | BC+RL (300 demos) | BC+RL (1000 demos) |
+| -- | -- | -- | -- |
+| ![social-media_wge](workflows/social-media_wge.gif) | ![social-media_100](workflows/social-media_100.gif) | ![social-media_300](workflows/social-media_300.gif) | ![social-media_1000](workflows/social-media_1000.gif) |
+| ![enter-time_wge](workflows/enter-time_wge.gif) | ![enter-time_100](workflows/enter-time_100.gif) | ![enter-time_300](workflows/enter-time_300.gif) | ![enter-time_1000](workflows/enter-time_1000.gif) |
+| ![click-checkboxes-large_wge](workflows/click-checkboxes-large_wge.gif) | ![click-checkboxes-large_100](workflows/click-checkboxes-large_100.gif) | ![click-checkboxes-large_300](workflows/click-checkboxes-large_300.gif) | ![click-checkboxes-large_1000](workflows/click-checkboxes-large_1000.gif) |
+| ![click-checkboxes-soft_wge](workflows/click-tab-2-hard_wge.gif) | ![click-checkboxes-soft_100](workflows/click-tab-2-hard_100.gif) | ![click-checkboxes-soft_300](workflows/click-checkboxes-soft_300.gif) | ![click-checkboxes-soft_1000](workflows/click-checkboxes-soft_1000.gif) |
+| ![email-inbox-nl-turk_wge](workflows/email-inbox-nl-turk_wge.gif) | ![email-inbox-nl-turk_100](workflows/email-inbox-nl-turk_100.gif) | ![email-inbox-nl-turk_300](workflows/email-inbox-nl-turk_300.gif) | ![email-inbox-nl-turk_1000](workflows/email-inbox-nl-turk_1000.gif) |
 
 
 # References
