@@ -1,2 +1,0 @@
-#!/bin/bash
-rsync -avzuLi --exclude='*.swp' ./ jamie:/u/ppasupat/www/mturk/miniwob-v3/ $@
