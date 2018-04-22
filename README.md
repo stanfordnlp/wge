@@ -25,11 +25,6 @@ flight from San Francisco to New York for Dec 23rd."
   - If this gives you problems, try again and add pip's ```--ignore-installed```
   flag.
 
-- Git submodules (needed for FormWoB and demonstrations)
-  ```
-  git submodule update --init --recursive
-  ```
-
 - Node and npm
   - Make sure Node and npm are installed via ```brew install node```. If they 
   are, ```node -v``` and ```npm -v``` should print version numbers.
