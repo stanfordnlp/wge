@@ -1,6 +1,0 @@
-{
-  "host": "linuxkit-025000000001",
-  "stats": {
-    "num_demonstrations": 0
-  }
-}
