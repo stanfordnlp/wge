@@ -166,7 +166,7 @@ def memoize_with_key_fxn(key_fxn):
 
 def args_as_string(args, kwargs):
     args_str = '_'.join([str(a) for a in args])
-    kwargs_str = '_'.join(['{}={}'.format(k, v) for k, v in kwargs.iteritems()])
+    kwargs_str = '_'.join(['{}={}'.format(k, v) for k, v in kwargs.items()])
     items = [args_str, kwargs_str]
     items = [s for s in items if s]  # remove empty elements
     key_str = '_'.join(items)
@@ -233,28 +233,8 @@ def chunks(l, n):
     """
     Return a generator of lists, each of size n (the last list may be less than n)
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i + n]
-
-
-def ensure_unicode(s):
-    assert isinstance(s, basestring)
-    if not isinstance(s, unicode):
-        s = unicode(s, 'utf-8')
-    return s
-
-
-class UnicodeMixin(object):
-    __slots__ = []
-    @abstractmethod
-    def __unicode__(self):
-        raise NotImplementedError
-
-    def __str__(self):
-        return repr(self)
-
-    def __repr__(self):
-        return unicode(self).encode('utf-8')
 
 
 class EqualityMixinSlots(object):
@@ -329,7 +309,7 @@ def data_split(items, dev_part=0.1, test_part=0.1):
     assert len(train_set.intersection(dev_set)) == 0
     assert len(train_set.intersection(test_set)) == 0
 
-    print 'train {}, dev {}, test {}'.format(len(train), len(dev), len(test))
+    print('train {}, dev {}, test {}'.format(len(train), len(dev), len(test)))
     return train, dev, test
 
 
@@ -416,7 +396,7 @@ def get_batch(data, batch_size, k):
         batch_size: the size of the returned batch
         k: the batch index you want to get.
     """
-    return [data[i % len(data)] for i in xrange(k * batch_size, (k + 1) * batch_size)]
+    return [data[i % len(data)] for i in range(k * batch_size, (k + 1) * batch_size)]
 
 
 # TODO: test
@@ -476,7 +456,7 @@ class HomogeneousBatchSampler(object):
         for d in data:
             buckets[bucket_fxn(d)].append(d)
 
-        keys = buckets.keys()
+        keys = list(buckets.keys())
         freqs = np.array([len(buckets[k]) for k in keys], dtype=float)
         probs = freqs / np.sum(freqs)
 
@@ -560,7 +540,7 @@ class NestedDict(MutableMapping):
             d = {}
 
         self.d = {}
-        for keys, val in self._flatten(d).iteritems():
+        for keys, val in self._flatten(d).items():
             self.set_nested(keys, val)
 
     def __iter__(self):
@@ -576,7 +556,7 @@ class NestedDict(MutableMapping):
     def __len__(self):
         """Total number of leaf nodes."""
         l = 0
-        for v in self.itervalues():
+        for v in self.values():
             if isinstance(v, NestedDict):
                 l += len(v)
             else:
@@ -616,7 +596,7 @@ class NestedDict(MutableMapping):
 
     def as_dict(self):
         d = {}
-        for key, sub in self.iteritems():
+        for key, sub in self.items():
             if isinstance(sub, NestedDict):
                 val = sub.as_dict()
             else:
@@ -632,7 +612,7 @@ class NestedDict(MutableMapping):
             if not isinstance(d, Mapping):  # leaf node
                 flattened[key_tuple] = d
                 return
-            for key, val in d.iteritems():
+            for key, val in d.items():
                 helper(key_tuple + (key,), val)
 
         helper(tuple(), d)
@@ -642,7 +622,7 @@ class NestedDict(MutableMapping):
         return self._flatten(self)
 
     def leaves(self):
-        return self.flattened().values()
+        return list(self.flattened().values())
 
 
 def ranks(scores, ascending=True):
@@ -990,6 +970,15 @@ class Config(object):
         configs = [Config.from_file(p) for p in paths]
         return Config.merge(configs)  # later configs overwrite earlier configs
 
+    def __getstate__(self):
+        return self._config_tree
+
+    def __setstate__(self, state):
+        self._config_tree = state
+
+    # Explicitly remove attributes from __getattr__
+    __deepcopy__ = None
+
 
 def softmax(logits):
     """Take the softmax over a set of logit scores.
@@ -1092,7 +1081,7 @@ def parallel_call(fxn, vals):
             executor.submit(val, val)
         for val, result in gtd.chrono.verboserate(executor.results(), desc='Processing values', total=len(vals)):
             if isinstance(result, Failure):
-                print result.traceback
+                print(result.traceback)
             else:
                 results.append(result)
     return results
@@ -1114,7 +1103,7 @@ class ClassCounter(object):
         stats.annotate_snapshot(snap)
 
         # get target class
-        classes = snap.classes.keys()
+        classes = list(snap.classes.keys())
 
         if len(classes) == 0:
             return 0  # no instances of the class seen yet

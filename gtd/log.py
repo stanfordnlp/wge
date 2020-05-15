@@ -139,25 +139,12 @@ class SyncedMetadata(Metadata):
 
 def print_list(l):
     for item in l:
-        print item
+        print(item)
 
 
 def print_no_newline(s):
     sys.stdout.write(s)
     sys.stdout.flush()
-
-
-def set_log_level(level):
-    """Set the log-level of the root logger of the logging module.
-
-    Args:
-        level: can be an integer such as 30 (logging.WARN), or a string such as 'WARN'
-    """
-    if isinstance(level, str):
-        level = logging._levelNames[level]
-
-    logger = logging.getLogger()  # gets root logger
-    logger.setLevel(level)
 
 
 def jupyter_no_margins():

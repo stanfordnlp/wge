@@ -75,9 +75,9 @@ class Profiler(object):
         """
         from inspect import isclass, isfunction
 
-        for item in mod.__dict__.values():
+        for item in list(mod.__dict__.values()):
             if isclass(item):
-                for k, v in item.__dict__.items():
+                for k, v in list(item.__dict__.items()):
                     if isinstance(v, staticmethod) or isinstance(v, classmethod):
                         underlying_fxn = v.__get__(item)
                         self.add_function(underlying_fxn)
@@ -168,14 +168,14 @@ class ProfilerStats(Mapping):
 
     def report(self, fxns=None):
         if fxns is None:
-            fxns = self.keys()
+            fxns = list(self.keys())
 
         fxn_stats = [self[f] for f in fxns]
         fxn_stats = sorted(fxn_stats, key=lambda stats: stats.total_time, reverse=True)
 
         for stats in fxn_stats:
             if stats.empty: continue
-            print stats
+            print(stats)
 
 
 class FunctionStats(object):
@@ -240,12 +240,12 @@ def profile(f):
 
 @contextmanager
 def timer(name='unnamed'):
-    print 'Start: {}'.format(name)
+    print('Start: {}'.format(name))
     sys.stdout.flush()
     start = time.time()
     yield
     stop = time.time()
-    print 'Finish: {} ({} s)'.format(name, stop - start)
+    print('Finish: {} ({} s)'.format(name, stop - start))
     sys.stdout.flush()
 
 
@@ -312,6 +312,6 @@ def monitor_call_stack():
         f = sys.stderr
 
     faulthandler.register(signal.SIGUSR1, file=f)
-    print 'To monitor call stack, type this at command line: kill -USR1 {}'.format(os.getpid())
-    print 'Call stack will be printed to stderr' \
-          '(in IPython Notebook, this will show in the terminal where you launched the notebook.)'
+    print('To monitor call stack, type this at command line: kill -USR1 {}'.format(os.getpid()))
+    print('Call stack will be printed to stderr' \
+          '(in IPython Notebook, this will show in the terminal where you launched the notebook.)')

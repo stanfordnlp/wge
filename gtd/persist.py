@@ -11,7 +11,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.engine.url import URL
 
 from gtd.io import open_or_create, JSONPicklable
-from gtd.utils import ensure_unicode, SimpleExecutor, Failure
+from gtd.utils import SimpleExecutor, Failure
 from gtd.utils import makedirs
 from sqlalchemy import Column, Table
 from sqlalchemy import tuple_
@@ -153,22 +153,22 @@ class CacheWrapperMixin(object):
         return len(self.cache)
 
     def iteritems(self):
-        return self.cache.iteritems()
-
-    def iterkeys(self):
-        return self.cache.iterkeys()
-
-    def itervalues(self):
-        return self.cache.itervalues()
-
-    def keys(self):
-        return self.cache.keys()
-
-    def items(self):
         return self.cache.items()
 
-    def values(self):
+    def iterkeys(self):
+        return self.cache.keys()
+
+    def itervalues(self):
         return self.cache.values()
+
+    def keys(self):
+        return list(self.cache.keys())
+
+    def items(self):
+        return list(self.cache.items())
+
+    def values(self):
+        return list(self.cache.values())
 
 
 class LazyMapping(CacheWrapperMixin, BatchMapping):
@@ -568,7 +568,7 @@ class TableMapping(BatchMutableMapping):
         row = self._key_orm.to_row(key)
         row.update(self._val_orm.to_row(val))
         if string_cols:
-            row = {col.name: v for col, v in row.iteritems()}
+            row = {col.name: v for col, v in row.items()}
         return row
 
     def del_batch(self, keys):
@@ -622,17 +622,17 @@ class TableMapping(BatchMutableMapping):
         return iter(self)
 
     def itervalues(self):
-        for _, val in self.iteritems():
+        for _, val in self.items():
             yield val
 
     def keys(self):
-        return list(self.iterkeys())
+        return list(self.keys())
 
     def items(self):
-        return list(self.iteritems())
+        return list(self.items())
 
     def values(self):
-        return list(self.itervalues())
+        return list(self.values())
 
 
 class FileMapping(MutableMapping, Closeable):
@@ -699,15 +699,6 @@ class FileSerializer(object):
         pass
 
 
-class UnicodeSerializer(FileSerializer):
-    def to_line(self, obj):
-        u = ensure_unicode(obj)
-        return u.encode('utf-8')
-
-    def from_line(self, line):
-        return line.decode('utf-8')
-
-
 class CustomSerializer(FileSerializer):
     def __init__(self, to_line, from_line):
         self._to = to_line
@@ -764,322 +755,6 @@ class SimpleAppendableSequence(AppendableSequence, Closeable):
     @property
     def closed(self):
         return self._closed
-
-
-class FileSequenceOffsets(Sequence, Closeable):
-    def __init__(self, file_seq):
-        offsets_path = file_seq.path + '.offsets'
-        file_existed = os.path.isfile(offsets_path)  # check if file already existed
-        self._f_write = open_or_create(offsets_path, 'a')  # open for appending only
-
-        if file_existed:
-            # load offsets from file into memory
-            with open(offsets_path, 'r') as f:
-                self._offsets = [int(line) for line in f]  # int cast strips newline automatically
-        else:
-            # build offsets (in-memory and on-file)
-            self._offsets = []
-            current_offset = 0
-            for line in file_seq.iter_raw_lines():
-                self.append(current_offset)
-                current_offset += len(line)
-
-        self._offsets_path = offsets_path
-
-    def close(self):
-        self._f_write.close()
-
-    @property
-    def closed(self):
-        return self._f_write.closed
-
-    def __repr__(self):
-        return 'FileSequenceOffsets at {}'.format(self._offsets_path)
-
-    def __getitem__(self, i):
-        return self._offsets[i]
-
-    def __len__(self):
-        return len(self._offsets)
-
-    def append(self, i):
-        self.extend([i])
-
-    def extend(self, i_list):
-        self._offsets.extend(i_list)
-        f = self._f_write
-        for i in i_list:
-            f.write(str(i))
-            f.write('\n')
-        f.flush()
-
-
-class FileSequenceMetaData(Closeable):
-    """Stores FileSequence properties in a JSON file."""
-    def __init__(self, file_seq):
-        """Store metadata about a FileSequence.
-
-        Args:
-            file_seq (FileSequence)
-        """
-        meta_path = file_seq.path + '.meta'
-        file_existed = os.path.isfile(meta_path)  # check if file already exists
-        self._d = FileMapping(meta_path)  # initialize underlying dict
-
-        if not file_existed:
-            self.length = len(file_seq)  # record length
-
-    def close(self):
-        self._d.close()
-
-    @property
-    def closed(self):
-        return self._d.closed
-
-    @property
-    def length(self):
-        try:
-            return self._d['length']
-        except KeyError:
-            raise AttributeError()
-
-    @length.setter
-    def length(self, val):
-        self._d['length'] = val
-
-    def __str__(self):
-        return str(self._d)
-
-    def __repr__(self):
-        return repr(self._d)
-
-
-class FileSequence(AppendableSequence, Closeable):
-    """Sequence backed by a file."""
-    def __init__(self, path, serializer=None):
-        if serializer is None:
-            serializer = UnicodeSerializer()  # by default, just write to file as utf-8 encoded strings
-
-        self._path = path
-        self._ser = serializer
-
-        # open or create the corresponding file
-        self._f_read = open_or_create(path, 'r')  # for reading only
-        self._f_write = open_or_create(path, 'a')  # for appending. Stream positioned at end of file.
-
-        # create metadata
-        self._offsets = FileSequenceOffsets(self)  # note: this must come before metadata
-        self._meta = FileSequenceMetaData(self)
-
-    def close(self):
-        self._meta.close()
-        self._offsets.close()
-        self._f_write.close()
-        self._f_read.close()
-
-    @property
-    def closed(self):
-        return self._meta.closed and self._offsets.closed and self._f_write.closed and self._f_read.closed
-
-    def __repr__(self):
-        return 'FileSequence at {}'.format(self._path)
-
-    @property
-    def path(self):
-        return self._path
-
-    def _strip_newline(self, line):
-        return line[:-1]
-
-    def __getitem__(self, i):
-        if isinstance(i, slice):
-            return SequenceSlice(self, i)
-
-        f = self._f_read
-        f.seek(self._offsets[i])
-        line = f.readline()
-        line = self._strip_newline(line)
-        return self._ser.from_line(line)
-
-    def __len__(self):
-        return len(self._offsets)
-
-    def append(self, item):
-        self.extend([item])
-
-    def extend(self, items):
-        f = self._f_write
-        offsets = []
-        for item in items:
-            offset = f.tell()
-            offsets.append(offset)
-            line = self._ser.to_line(item)
-            f.write(line)
-            f.write('\n')
-
-        f.flush()
-        self._meta.length += len(offsets)  # keep metadata up-to-date
-        self._offsets.extend(offsets)
-
-    def iter_raw_lines(self):
-        for line in self._f_read:
-            yield line
-
-    def __iter__(self):
-        for line in self.iter_raw_lines():
-            line = self._strip_newline(line)
-            yield self._ser.from_line(line)
-
-
-class SimpleFileSequence(FileSequence):
-    def __init__(self, path):
-        ser = UnicodeSerializer()
-        super(SimpleFileSequence, self).__init__(path, ser)
-
-
-class Shard(FileSequence):
-    """A FileSequence serving as a Shard in a ShardedSequence."""
-    @classmethod
-    def open(cls, directory, index, max_length, serializer):
-        path = cls.shard_path(directory, index)
-        if not os.path.isfile(path):
-            raise IOError('No such shard: {}'.format(path))
-        return Shard(directory, index, max_length, serializer)
-
-    @classmethod
-    def shard_path(cls, directory, index):
-        return os.path.join(directory, '{}.shard'.format(index))
-
-    def __init__(self, directory, index, max_length, serializer):
-        path = self.shard_path(directory, index)
-        self._index = index
-        self._max_length = max_length
-        super(Shard, self).__init__(path, serializer)
-        assert len(self) <= self._max_length
-
-    @property
-    def index(self):
-        return self._index
-
-    @property
-    def max_length(self):
-        return self._max_length
-
-    @property
-    def remaining_space(self):
-        return self.max_length - len(self)
-
-
-class ShardedSequence(AppendableSequence, Closeable):
-    def __init__(self, directory, shard_size, serializer):
-        self._directory = directory
-        self._shard_size = shard_size
-        self._serializer = serializer
-        # create directory if it does not exist
-        makedirs(directory)
-        # identify shards in the directory
-        self._shards = []
-        for k in itertools.count():
-            try:
-                shard = Shard.open(directory, k, self._shard_size, serializer)
-                self._shards.append(shard)
-            except IOError:
-                break
-
-        # create one shard if there are none
-        if len(self._shards) == 0:
-            self.add_shard()
-
-        # all shards except the last should match the shard size
-        for i, shard in enumerate(self._shards):
-            l = len(shard)
-            if i == len(self._shards) - 1:  # final shard
-                assert l <= self._shard_size
-            else:
-                assert l == self._shard_size
-
-    def __repr__(self):
-        return 'ShardedSequence at {}'.format(self._directory)
-
-    def close(self):
-        for shard in self._shards:
-            shard.close()
-
-    @property
-    def closed(self):
-        for shard in self._shards:
-            if not shard.closed:
-                return False
-        return True
-
-    @property
-    def shard_size(self):
-        return self._shard_size
-
-    @property
-    def directory(self):
-        return self._directory
-
-    def __len__(self):
-        return sum(len(s) for s in self._shards)
-
-    def __getitem__(self, i):
-        if isinstance(i, slice):
-            return SequenceSlice(self, i)
-
-        index = i // self.shard_size
-        shard_index = i % self.shard_size
-        try:
-            shard = self._shards[index]
-            return shard[shard_index]
-        except IndexError:
-            raise IndexError('{} exceeds max index of ShardedSequence.'.format(i))
-
-    def add_shard(self):
-        index = len(self._shards)
-        shard = Shard(self.directory, index, self.shard_size, self._serializer)
-        self._shards.append(shard)
-        return shard
-
-    def appendable_shard(self):
-        """Return the shard that we can append to.
-
-        If the last existing shard is full, create a new shard and return that.
-
-        Returns:
-            Shard
-        """
-        last_shard = self._shards[-1]
-        if last_shard.remaining_space == 0:
-            last_shard = self.add_shard()
-        return last_shard
-
-    def append(self, item):
-        self.extend([item])
-
-    def extend(self, items):
-        iter_items = iter(items)
-        def get_batch(k):
-            """Get up to k more elements from items."""
-            results = []
-            for _ in range(k):
-                try:
-                    results.append(next(iter_items))
-                except StopIteration:
-                    break
-            return results
-
-        # keep filling shards until we can't fill them anymore
-        while True:
-            shard = self.appendable_shard()
-            requested = shard.remaining_space
-            batch = get_batch(requested)
-            shard.extend(batch)
-            if len(batch) < requested:
-                break
-
-    def __iter__(self):
-        return itertools.chain(*self._shards)
 
 
 class BatchIterator(Iterator):
@@ -1207,40 +882,3 @@ class LazyIterator(BatchIterator):
                 break
             self.advance_to(n)
             self._ensure_batch(batch_size)
-
-
-class SequenceSlice(Sequence):
-    def __init__(self, seq, slice):
-        self._seq = seq
-        start, stop, step = slice.start, slice.stop, slice.step
-        if start is None:
-            start = 0
-        if stop is None:
-            stop = len(seq)
-        if step is None:
-            step = 1
-
-        for val in (start, stop, step):
-            if val < 0:
-                raise ValueError("Slice values must be non-negative.")
-
-        self.start, self.stop, self.step = start, stop, step
-
-    def __getitem__(self, i):
-        if i < 0:  # allow for negative indexing
-            if i < -len(self):  # only allow negatives in the appropriate range
-                raise IndexError()
-            i = i % len(self)  # convert to positive index
-
-        idx = self.start + self.step * i
-        if idx >= self.stop:
-            raise IndexError()
-        return self._seq[idx]
-
-    def __len__(self):
-        diff = self.stop - self.start
-        num_items = diff / self.step  # integer division rounds down
-        remainder = diff % self.step
-        if remainder > 0:
-            num_items += 1
-        return num_items

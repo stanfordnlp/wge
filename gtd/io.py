@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle
 import codecs
 import contextlib
 from contextlib import contextmanager
@@ -10,17 +10,14 @@ import shutil
 import subprocess
 import sys
 import time
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from abc import ABCMeta, abstractmethod
 from collections import Mapping, OrderedDict
-from itertools import izip
 from os.path import join
 from threading import Thread
 
 import jsonpickle
 import numpy as np
-from fabric.api import local, settings
-from fabric.context_managers import hide
 
 from gtd.utils import truncated
 
@@ -125,30 +122,13 @@ def load(path):
         return pickle.load(f)
 
 
-def work_in_sandbox(directory):
-    """Create a sandbox directory, and set cwd to sandbox.
-
-    Deletes any existing sandbox directory!
-
-    Args:
-        directory: directory in which to put sandbox directory
-    """
-    os.chdir(directory)
-    p = 'sandbox'
-    if os.path.exists(p):  # remove if already exists
-        shutil.rmtree(p)
-    os.makedirs(p)
-    os.chdir(p)
-    print os.getcwd()
-
-
 def makedirs(directory):
     """If directory does not exist, make it.
 
     Args:
         directory (str): a path to a directory. Cannot be the empty path.
     """
-    if directory != '' and not os.path.exists(directory):
+    if directory != '' and not os.path.exists(directory) and not os.path.lexists(directory):
         os.makedirs(directory)
 
 
@@ -179,13 +159,13 @@ def read_files(*file_paths):
     for i, p in enumerate(file_paths):
         if p:
             files.append(open(p, mode="r"))
-            print 'Opened:', p
+            print('Opened:', p)
         else:
             files.append(EmptyFile())
-            print 'WARNING: no path provided for file {} in list.'.format(i)
+            print('WARNING: no path provided for file {} in list.'.format(i))
 
     with contextlib.nested(*files) as entered_files:
-        for lines in izip(*entered_files):
+        for lines in zip(*entered_files):
             yield lines
 
 
@@ -204,7 +184,7 @@ class MultiFileWriter(object):
 
     def write(self, lines):
         assert len(lines) == len(self.files)
-        for f, line in izip(self.files, lines):
+        for f, line in zip(self.files, lines):
             f.write(line)
 
 
@@ -296,7 +276,7 @@ def shell(cmd, cwd=None, verbose=False, debug=False):
         all output from the command
     """
     if verbose:
-        print cmd
+        print(cmd)
 
     if debug:
         return
@@ -316,11 +296,6 @@ def shell(cmd, cwd=None, verbose=False, debug=False):
 
     # TODO: make sure we get all output
     return ''.join(output)
-
-
-def local_bash(command, capture=False):
-    """Just like fabric.api.local, but with shell='/bin/bash'."""
-    return local(command, capture, shell='/bin/bash')
 
 
 class JSONPicklable(object):
@@ -469,133 +444,6 @@ class IntegerDirectories(Mapping):
 
     def __iter__(self):
         return iter(self._ints_to_paths)
-
-
-def rsync(src_path, dest_path, src_host=None, dest_host=None, delete=False):
-    """Sync a file/directory from one machine to another machine.
-
-    Args:
-        src_path (str): a file or directory on the source machine.
-        dest_path (str): the corresponding file or directory on the target machine.
-        src_host (str): the address of the source machine. Default is local machine.
-        dest_host (str): the address of the target machine. Default is local machine.
-        delete (bool): default is False. If True, deletes any extraneous files at the destination not
-            present at the source!
-
-    Options used:
-        -r: recurse into directories
-        -l: copy symlinks as symlinks
-        -v: verbose
-        -z: compress files during transfer
-        -t: preserve times (needed for rsync to recognize that files haven't changed since last update!)
-        --delete: delete any extraneous files at the destination
-        --progress: show progress
-    """
-    if os.path.isdir(src_path):
-        if src_path[:-1] != '/':
-            src_path += '/'  # add missing trailing slash
-
-    def format_address(host, path):
-        if host is None:
-            return path
-        else:
-            return '{}:{}'.format(host, path)
-
-    cmds = ["rsync", "-rlvzt", "--progress"]
-
-    if delete:
-        cmds.append('--delete')
-
-    cmds.append(format_address(src_host, src_path))
-    cmds.append(format_address(dest_host, dest_path))
-    cmd = ' '.join(cmds)
-    local(cmd)
-
-
-def num_lines(file_path):
-    """Count the number of lines in a file.
-
-    Uses the `wc` command line tool.
-
-    Args:
-        file_path (str)
-
-    Returns:
-        int
-    """
-    return int(local('wc -l {}'.format(file_path), capture=True).split()[0])
-
-
-class Tmux(object):
-    def __init__(self, name, cwd=None):
-        """Create a tmux session.
-
-        Args:
-            name (str): name of the new session
-            cwd (str): initial directory of the session
-
-        Options used:
-            -d: do not attach to the new session
-            -s: specify a name for the session
-        """
-        self.name = name
-
-        with settings(hide('warnings'), warn_only=True):
-            result = local("tmux new -d -s {}".format(name))  # start tmux session
-
-        if result.failed:
-            raise TmuxSessionExists()
-
-        if cwd is None:
-            cwd = os.getcwd()
-
-        # move to current directory
-        self.run("cd {}".format(cwd))
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def run(self, command):
-        """Run command in tmux session.
-
-        Assume that the session has only one window.
-
-        Args:
-            command (str)
-        """
-        local('tmux send -t {} "{}" Enter'.format(self.name, command))
-
-    def close(self):
-        local("tmux kill-session -t {}".format(self.name))
-
-
-class TmuxSessionExists(Exception):
-    pass
-
-
-def tunnel(local_port, host, target, target_port, tmux_name, autossh_port=20000):
-    """Make a port on a target machine appear as if it is a port on our local machine.
-
-    Uses autossh to keep the tunnel open even with interruptions.
-    Runs autossh in a new tmux session, so that it can be monitored.
-
-    Args:
-        local_port (int): a port on this machine, e.g. 18888
-        host (str): the machine that will be used to create the SSH tunnel, e.g. `kgu@jamie.stanford.edu` or just `jamie`
-            if we have that alias configured in ~/.ssh/config.
-        target (str): the address of the target machine, e.g. `kgu@john11.stanford.edu` or just `john11`. The address
-            should be RELATIVE to the host machine.
-        target_port (int): port on the target machine, e.g. 8888
-        tmux_name (str): name of the tmux session that will be running the autossh command.
-        autossh_port (int): local port used by autossh to monitor the connection. Cannot be used by more than one
-            autossh process at a time!
-    """
-    command = "autossh -M {} -N -n -T -L {}:{}:{} {}".format(autossh_port, local_port, target, target_port, host)
-    tmux = Tmux(tmux_name)
-    tmux.run(command)
 
 
 class Workspace(object):

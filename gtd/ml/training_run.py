@@ -1,9 +1,10 @@
 import codecs
 import logging
 import socket
+import os
 from abc import ABCMeta, abstractmethod
 from collections import Mapping
-from os.path import join
+from os.path import join, abspath
 
 from git import Repo, InvalidGitRepositoryError
 from tensorboard_logger import tensorboard_logger
@@ -70,28 +71,21 @@ class TrainingRun(object):
         repo = Repo(src_dir)
         diffindex = repo.head.commit.diff(None, create_patch=True)
         if len(diffindex) > 0:
-            print 'Saving uncomitted changes as patches.'
-            print 'Apply them with the `patch` command line tool.'
+            print('Saving uncomitted changes as patches.')
+            print('Apply them with the `patch` command line tool.')
 
             for diff in diffindex:
-                filename = unicode(diff.a_rawpath).replace(u'/', u'-').replace(u'.', u'-')
+                filename = str(diff.a_rawpath).replace(u'/', u'-').replace(u'.', u'-')
 
                 def to_file(s, ext):
-                    # convert to unicode
-                    try:
-                        s = s.decode('utf-8')
-                    except UnicodeDecodeError:
-                        print u'Failed to save patch for {}'.format(filename)
-                        return
-
                     path = join(patch_dir, filename + ext)
-                    with codecs.open(path, 'w', encoding='utf-8') as f:
-                        f.write(s)
+                    with open(path, 'w') as f:
+                        f.write(str(s))
 
                 to_file(diff.diff, '.patch')
                 to_file(str(diff), '.txt')
         else:
-            print 'No uncommitted changes.'
+            print('No uncommitted changes.')
 
     def match_commit(self, src_dir):
         """Check that the current commit matches the recorded commit for this run.
@@ -147,9 +141,37 @@ class TrainingRuns(Mapping):
         logging.info('Reloaded TrainingRun #{}'.format(i))
         return run
 
+    def clone(self, i, configs, name=None):
+        """Clones an existing TrainingRun with additional configs.
+
+        Args:
+            i (int): index of TrainingRun to clone
+            configs (list[Config]): new configs to mixin
+            name (str)
+        """
+        print('Cloning TrainingRun {}')
+        clone_dir = self._int_dirs[i]
+        configs.insert(0, Config.from_file(self._config_path(clone_dir)))
+        config = Config.merge(configs)
+        print('New config: {}\n'.format(config))
+
+        save_dir = self._int_dirs.new_dir(name=name)
+        cfg_path = self._config_path(save_dir)
+        config.to_file(cfg_path)
+        os.symlink(abspath(join(clone_dir, "checkpoints")),
+                   join(save_dir, "checkpoints"))
+        run = self._run_factory(config, save_dir)
+        try:
+            run.record_commit(self._src_dir)
+            run.dump_diff(self._src_dir)
+        except InvalidGitRepositoryError:
+            print('WARNING: could not obtain Git information.')
+        run.metadata['config'] = config._config_tree  # save config in metadata, for programmatic access
+        return run
+
     def new(self, config, name=None):
         """Create a new TrainingRun."""
-        print 'TrainingRun configuration:\n{}'.format(config)
+        print('TrainingRun configuration:\n{}'.format(config))
 
         save_dir = self._int_dirs.new_dir(name=name)
         cfg_path = self._config_path(save_dir)
@@ -159,10 +181,10 @@ class TrainingRuns(Mapping):
             run.record_commit(self._src_dir)
             run.dump_diff(self._src_dir)
         except InvalidGitRepositoryError:
-            print 'WARNING: could not obtain Git information.'
+            print('WARNING: could not obtain Git information.')
         run.metadata['config'] = config._config_tree  # save config in metadata, for programmatic access
 
-        print 'New TrainingRun created at: {}'.format(run.workspace.root)
+        print('New TrainingRun created at: {}'.format(run.workspace.root))
         return run
 
     def __iter__(self):

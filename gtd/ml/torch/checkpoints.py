@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle
 import shutil
 from os import listdir
 import os
@@ -128,11 +128,11 @@ class Checkpoints(object):
         """
         ckpt_num = self.latest_checkpoint_number
         if ckpt_num is None:
-            print 'No checkpoint to reload. Initializing fresh.'
+            print('No checkpoint to reload. Initializing fresh.')
             return TrainState.initialize(model, optimizer)
         else:
             train_state = self.load(self.latest_checkpoint_number, model, optimizer)
-            print 'Reloaded checkpoint #{}'.format(ckpt_num)
+            print('Reloaded checkpoint #{}'.format(ckpt_num))
             return train_state
 
     def delete(self, train_steps):
