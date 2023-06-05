@@ -25,6 +25,67 @@ def check_cwd_is_repo_root():
         raise RuntimeError('Must run script from root of the Git repository.')
 
 
+def upload_code(worksheet, debug=False):
+    """Upload source code."""
+    check_cwd_is_repo_root()
+
+    import git
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
+
+    with open('git-metadata-codalab.txt', 'w') as f:
+        f.write(sha + '\n')
+        if repo.is_dirty():
+            f.write('dirty repo\n')
+
+    print '\nUploading new source code:'
+    up_cmd = ("cl upload -w {} -n wge -x .git docs downloads "
+              "launch_jobs.sh LICENSE README.md requirements.txt "
+              "script_tools.py venv third-party/miniwob-demos -- .").format(worksheet)
+    if debug:
+        print up_cmd
+    else:
+        local(up_cmd)
+
+
+def upload_demos(worksheet, debug=False):
+    """Upload demonstrations and make a new rl_data bundle."""
+    check_cwd_is_repo_root()
+    up_cmd = 'cl upload -w {} -n demonstrations third-party/miniwob-demos'.format(
+        worksheet)
+    make_cmd = 'cl make -w {} -n rl_data glove:glove nltk:nltk demonstrations:demonstrations'.format(
+        worksheet)
+
+    print '\nUploading new demonstrations:'
+    if debug:
+        print up_cmd
+        print make_cmd
+    else:
+        local(up_cmd)
+        local(make_cmd)
+        time.sleep(5)
+
+
+def create_worksheet(worksheet):
+    """Create worksheet if it doesn't already exist."""
+    try:
+        local('cl work {}'.format(worksheet), capture=True)
+    except BaseException:
+        # create new worksheet
+        local('cl new {}'.format(worksheet))
+
+        # give it a title
+        local('cl wedit -t {w} {w}'.format(w=worksheet))
+
+        # link to worksheet from home page
+        local('cl add worksheet {} wge'.format(worksheet))
+
+        # grant permissions
+        local('cl wperm {} wge all'.format(worksheet))
+
+        print 'Created worksheet: {}'.format(worksheet)
+
+
 miniwob_easy = [
     "choose-list",
     "click-button",
